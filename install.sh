@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 # One-command installer for Plex Auto Subs
+#
+# SECURITY NOTE: Review this script before running it.
+# Pinned commit: https://github.com/roies/plex-auto-subs
+#
 # Usage: curl -fsSL https://raw.githubusercontent.com/roies/plex-auto-subs/master/install.sh | bash
 
 set -e
@@ -29,22 +33,37 @@ fi
 
 # ── 3. pip install ────────────────────────────────────────────────────────────
 info "Installing plex-auto-subs..."
-$PYTHON -m pip install --quiet --upgrade \
+$PYTHON -m pip install --upgrade \
     "git+https://github.com/roies/plex-auto-subs" \
     ffsubsync argostranslate
 
-DAEMON=$(python3 -c "import sysconfig; print(sysconfig.get_path('scripts'))")/plex-auto-subs
+DAEMON=$($PYTHON -c "import sysconfig; print(sysconfig.get_path('scripts'))")/plex-auto-subs
 [ -f "$DAEMON" ] || DAEMON=$($PYTHON -m site --user-base)/bin/plex-auto-subs
 
-# ── 4. Plex token ─────────────────────────────────────────────────────────────
+# ── 4. Plex token — stored in a root-only env file, NOT in the service unit ──
 echo ""
 echo "Find your Plex token at:"
 echo "  Plex Web → Settings → Account → (scroll down) 'Get your Plex token'"
 echo "  Or: https://support.plex.tv/articles/204059436"
 echo ""
-read -rp "Enter your Plex token (leave blank for local no-auth): " PLEX_TOKEN
+read -rsp "Enter your Plex token (input hidden, leave blank for local no-auth): " PLEX_TOKEN
+echo ""
 read -rp "Plex URL [http://localhost:32400]: " PLEX_URL
 PLEX_URL="${PLEX_URL:-http://localhost:32400}"
+
+# Write token to a root-readable-only env file so it never appears in
+# process args (ps aux), service unit files, or logs.
+ENV_FILE=/etc/plex-auto-subs.env
+info "Writing credentials to $ENV_FILE (mode 600)..."
+sudo bash -c "cat > '$ENV_FILE'" <<EOF
+PLEX_URL=${PLEX_URL}
+PLEX_TOKEN=${PLEX_TOKEN}
+TARGET_LANG=he
+SOURCE_LANG=en
+POLL_INTERVAL=15
+EOF
+sudo chmod 600 "$ENV_FILE"
+sudo chown root:root "$ENV_FILE"
 
 # ── 5. systemd service ────────────────────────────────────────────────────────
 SERVICE=/etc/systemd/system/plex-auto-subs.service
@@ -59,7 +78,8 @@ After=network.target
 [Service]
 Type=simple
 User=$CURRENT_USER
-ExecStart=$DAEMON --url $PLEX_URL --token $PLEX_TOKEN
+EnvironmentFile=/etc/plex-auto-subs.env
+ExecStart=$DAEMON
 Restart=on-failure
 RestartSec=10
 
@@ -76,5 +96,6 @@ echo ""
 echo "  Status : sudo systemctl status plex-auto-subs"
 echo "  Logs   : sudo journalctl -u plex-auto-subs -f"
 echo "  Stop   : sudo systemctl stop plex-auto-subs"
+echo "  Config : sudo nano /etc/plex-auto-subs.env  (then: sudo systemctl restart plex-auto-subs)"
 echo ""
 warn "First subtitle detected will download the en→he model (~100MB, one-time)."

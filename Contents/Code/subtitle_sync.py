@@ -23,6 +23,50 @@ import os
 
 log = logging.getLogger('subtitle_autosync')
 
+_SUBTITLE_EXTENSIONS = {'.srt', '.vtt', '.ass', '.ssa', '.sub'}
+_VIDEO_EXTENSIONS    = {'.mp4', '.mkv', '.mov', '.avi', '.m4v', '.wmv', '.ts', '.m2ts'}
+# Directories that must never be touched regardless of what the API returns
+_BLOCKED_PREFIXES = ('/etc', '/bin', '/sbin', '/usr/bin', '/usr/sbin',
+                     '/boot', '/sys', '/proc', '/dev', '/root',
+                     '/home', '/var/log')
+
+
+def _safe_subtitle_path(path_str: str) -> bool:
+    """Return True only if the path looks like a legitimate subtitle file."""
+    try:
+        p = Path(path_str).resolve()
+    except (ValueError, OSError):
+        return False
+    if not p.is_absolute():
+        return False
+    if p.suffix.lower() not in _SUBTITLE_EXTENSIONS:
+        log.warning('Rejected non-subtitle path from API: %s', path_str)
+        return False
+    for blocked in _BLOCKED_PREFIXES:
+        if str(p).startswith(blocked):
+            log.warning('Rejected blocked path from API: %s', path_str)
+            return False
+    return True
+
+
+def _safe_media_path(path_str: str) -> bool:
+    """Return True only if the path looks like a legitimate video file."""
+    try:
+        p = Path(path_str).resolve()
+    except (ValueError, OSError):
+        return False
+    if not p.is_absolute():
+        return False
+    if p.suffix.lower() not in _VIDEO_EXTENSIONS:
+        return False
+    if not p.exists():
+        return False
+    for blocked in _BLOCKED_PREFIXES:
+        if str(p).startswith(blocked):
+            log.warning('Rejected blocked video path from API: %s', path_str)
+            return False
+    return True
+
 
 def translate_subtitle_file(path: Path, target_lang: str, source_lang: str = 'en'):
     """Translate subtitle file in-place."""
@@ -146,14 +190,14 @@ class PlexPoller:
     def _video_file_path(self, video: ET.Element) -> Optional[str]:
         for part in video.iter('Part'):
             f = part.get('file')
-            if f and Path(f).exists():
+            if f and _safe_media_path(f):
                 return f
         return None
 
     def _resolve_subtitle_path(self, stream: ET.Element, rating_key: str) -> Optional[Path]:
         # Local sidecar or Plex-cached file: 'file' attribute is the real path
         file_attr = stream.get('file')
-        if file_attr:
+        if file_attr and _safe_subtitle_path(file_attr):
             p = Path(file_attr)
             if p.exists():
                 return p
