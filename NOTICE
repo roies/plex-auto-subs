@@ -1,0 +1,13 @@
+NOTICE
+======
+
+This repository's own source code is licensed under the MIT License (see LICENSE).
+
+The project also depends on the following third-party packages, which are installed
+from their upstream sources and remain subject to their own license terms:
+
+- ffsubsync
+- argostranslate
+
+When redistributing or packaging this project, please review and comply with the
+upstream licenses for those dependencies as applicable.

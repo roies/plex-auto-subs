@@ -8,11 +8,15 @@ version = "1.0.0"
 description = "Plex plugin that auto-syncs and auto-translates subtitles on playback — no config, no API keys"
 readme = "README.txt"
 requires-python = ">=3.8"
-license = { text = "MIT" }
+license = { file = "LICENSE" }
+classifiers = ["License :: OSI Approved :: MIT License"]
 dependencies = ["ffsubsync", "argostranslate"]
 
 [project.scripts]
 plex-auto-subs = "run_daemon:main"
+
+[tool.setuptools]
+license-files = ["LICENSE", "NOTICE"]
 
 [tool.setuptools.packages.find]
 where = ["."]

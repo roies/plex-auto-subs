@@ -77,4 +77,13 @@ Tests
 -----
   python -m pytest tests/ -v
 
+License
+-------
+  This repository's own source code is licensed under the MIT License
+  (see LICENSE).
+
+  The project also depends on third-party packages such as ffsubsync and
+  argostranslate, which remain subject to their own upstream license terms.
+  See NOTICE for details.
+
 
