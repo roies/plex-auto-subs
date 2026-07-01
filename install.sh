@@ -55,13 +55,14 @@ PLEX_URL="${PLEX_URL:-http://localhost:32400}"
 # process args (ps aux), service unit files, or logs.
 ENV_FILE=/etc/plex-auto-subs.env
 info "Writing credentials to $ENV_FILE (mode 600)..."
-sudo bash -c "cat > '$ENV_FILE'" <<EOF
-PLEX_URL=${PLEX_URL}
-PLEX_TOKEN=${PLEX_TOKEN}
-TARGET_LANG=he
-SOURCE_LANG=en
-POLL_INTERVAL=15
-EOF
+# Use printf to avoid heredoc variable expansion on user-supplied values
+sudo bash -c "printf '%s\n' \
+    'PLEX_URL=${PLEX_URL}' \
+    'PLEX_TOKEN=${PLEX_TOKEN}' \
+    'TARGET_LANG=he' \
+    'SOURCE_LANG=en' \
+    'POLL_INTERVAL=15' \
+    > '${ENV_FILE}'"
 sudo chmod 600 "$ENV_FILE"
 sudo chown root:root "$ENV_FILE"
 

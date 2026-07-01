@@ -211,7 +211,7 @@ class PlexPoller:
             if meta is not None:
                 for part in meta.iter('Part'):
                     f = part.get('file')
-                    if f:
+                    if f and _safe_media_path(f):   # validate before trusting API path
                         video_file = Path(f)
                         break
 
