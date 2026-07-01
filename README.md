@@ -115,6 +115,14 @@ plex-auto-subs --target-lang ''    # Disable translation (sync only)
 
 If Plex exposes the selected subtitle’s language, the daemon uses that as the source language automatically. Otherwise it falls back to `--source-lang` / `SOURCE_LANG` (default: `en`). If the subtitle is already in the target language, translation is skipped.
 
+### Preflight check
+
+```bash
+plex-auto-subs --check
+```
+
+This validates the local runtime (Python, ffsubsync, argostranslate model support) and checks whether Plex responds at the configured URL/token before the daemon starts.
+
 > First run per language pair downloads a ~100MB model. Fully offline after that.
 
 ---

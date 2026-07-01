@@ -96,6 +96,14 @@ Change translation language
   SOURCE_LANG / --source-lang (default: en). If the subtitle is already in
   the target language, translation is skipped.
 
+Preflight check
+---------------
+  plex-auto-subs --check
+
+  This validates the local runtime (Python, ffsubsync, argostranslate model
+  support) and checks whether Plex responds at the configured URL/token before
+  the daemon starts.
+
 Getting your Plex token
 -----------------------
   Plex Web → Settings → Account → scroll down → "Get your Plex token"
