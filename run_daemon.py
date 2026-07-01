@@ -24,6 +24,7 @@ import json
 import logging
 import os
 import shutil
+import subprocess
 import sys
 import time
 import urllib.request
@@ -54,6 +55,7 @@ def configure_logging(log_path: Optional[Path] = None):
 
 DEFAULT_CONFIG_PATH = Path.home() / '.plex-auto-subs.json'
 DEFAULT_LOG_PATH = Path.home() / '.plex-auto-subs.log'
+DEFAULT_RELEASE_TAG = 'v1.1.0'
 
 
 def load_config(config_path: Optional[Path] = None) -> dict:
@@ -90,6 +92,19 @@ def _pick_value(cli_value, config_value, env_value, default):
     if env_value is not None:
         return env_value
     return default
+
+
+def _run_self_update(release_tag: Optional[str] = None):
+    tag = release_tag or DEFAULT_RELEASE_TAG
+    log.info('Checking for updates at tag %s', tag)
+    try:
+        subprocess.run([sys.executable, '-m', 'pip', 'install', '--upgrade', f'git+https://github.com/roies/plex-auto-subs@{tag}'],
+                       check=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    except subprocess.CalledProcessError as exc:
+        log.warning('Self-update failed: %s', exc.stdout or exc)
+        return False
+    log.info('Self-update complete.')
+    return True
 
 
 def _check_environment(args):
@@ -158,6 +173,10 @@ def main():
                         help='Source language of subtitles (default: en)')
     parser.add_argument('--check', action='store_true',
                         help='Run a preflight check and exit without starting the daemon')
+    parser.add_argument('--self-update', action='store_true',
+                        help='Attempt to upgrade the package from the configured release tag before starting')
+    parser.add_argument('--release-tag', default=os.environ.get('PLEX_AUTO_SUBS_RELEASE_TAG', DEFAULT_RELEASE_TAG),
+                        help='Release tag to use for self-updates (default: v1.1.0)')
     args = parser.parse_args()
 
     config = load_config(Path(args.config))
@@ -172,6 +191,9 @@ def main():
 
     if args.check:
         return _check_environment(args)
+
+    if args.self_update:
+        _run_self_update(args.release_tag)
 
     log.info('Plex Auto Subs starting — PMS: %s  interval: %ds  translate: %s',
              args.url, args.interval, args.target_lang or 'off')

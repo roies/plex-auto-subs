@@ -137,6 +137,10 @@ A sample file is included as [config.example.json](config.example.json). Support
 
 The daemon writes a rotating log file by default to `~/.plex-auto-subs.log` (or the path passed via `--log-file`). Logs rotate at 2MB with 3 backups retained.
 
+### Startup self-update
+
+If you want the daemon to upgrade itself before each startup, pass `--self-update` (or set `PLEX_AUTO_SUBS_RELEASE_TAG` to a newer tag). The daemon will install the package from the configured release tag before it begins polling.
+
 > First run per language pair downloads a ~100MB model. Fully offline after that.
 
 ---

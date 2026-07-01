@@ -119,6 +119,13 @@ Logging
   (or the path passed via --log-file). Logs rotate at 2MB with 3 backups
   retained.
 
+Startup self-update
+-------------------
+  If you want the daemon to upgrade itself before each startup, pass
+  --self-update (or set PLEX_AUTO_SUBS_RELEASE_TAG to a newer tag). The
+  daemon will install the package from the configured release tag before it
+  begins polling.
+
 Getting your Plex token
 -----------------------
   Plex Web → Settings → Account → scroll down → "Get your Plex token"
