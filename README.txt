@@ -113,6 +113,12 @@ Config file
   A sample file is included as config.example.json. Supported keys are url,
   token, interval, target_lang, and source_lang.
 
+Logging
+-------
+  The daemon writes a rotating log file by default to ~/.plex-auto-subs.log
+  (or the path passed via --log-file). Logs rotate at 2MB with 3 backups
+  retained.
+
 Getting your Plex token
 -----------------------
   Plex Web → Settings → Account → scroll down → "Get your Plex token"

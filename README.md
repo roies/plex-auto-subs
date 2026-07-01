@@ -133,6 +133,10 @@ plex-auto-subs --config /path/to/plex-auto-subs.json
 
 A sample file is included as [config.example.json](config.example.json). Supported keys are `url`, `token`, `interval`, `target_lang`, and `source_lang`.
 
+### Logging
+
+The daemon writes a rotating log file by default to `~/.plex-auto-subs.log` (or the path passed via `--log-file`). Logs rotate at 2MB with 3 backups retained.
+
 > First run per language pair downloads a ~100MB model. Fully offline after that.
 
 ---

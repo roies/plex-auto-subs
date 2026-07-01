@@ -27,6 +27,7 @@ import shutil
 import sys
 import time
 import urllib.request
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Optional
 
@@ -41,7 +42,18 @@ logging.basicConfig(
 )
 log = logging.getLogger('subtitle_autosync')
 
+
+def configure_logging(log_path: Optional[Path] = None):
+    log_path = log_path or DEFAULT_LOG_PATH
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    handler = RotatingFileHandler(log_path, maxBytes=2 * 1024 * 1024, backupCount=3, encoding='utf-8')
+    handler.setFormatter(logging.Formatter('%(asctime)s [subtitle_autosync] %(levelname)s %(message)s'))
+    log.addHandler(handler)
+    log.setLevel(logging.INFO)
+    log.propagate = False
+
 DEFAULT_CONFIG_PATH = Path.home() / '.plex-auto-subs.json'
+DEFAULT_LOG_PATH = Path.home() / '.plex-auto-subs.log'
 
 
 def load_config(config_path: Optional[Path] = None) -> dict:
@@ -134,6 +146,8 @@ def main():
     parser = argparse.ArgumentParser(description='Plex Auto Subs — auto-sync and translate subtitles')
     parser.add_argument('--config', default=os.environ.get('PLEX_AUTO_SUBS_CONFIG', str(DEFAULT_CONFIG_PATH)),
                         help='Path to a JSON config file (default: ~/.plex-auto-subs.json)')
+    parser.add_argument('--log-file', default=os.environ.get('PLEX_AUTO_SUBS_LOG', str(DEFAULT_LOG_PATH)),
+                        help='Path to the rotating log file (default: ~/.plex-auto-subs.log)')
     parser.add_argument('--url', default=None)
     parser.add_argument('--token', default=None)
     parser.add_argument('--interval', type=int, default=None,
@@ -153,6 +167,8 @@ def main():
     args.interval = settings['interval']
     args.target_lang = settings['target_lang']
     args.source_lang = settings['source_lang']
+
+    configure_logging(Path(args.log_file))
 
     if args.check:
         return _check_environment(args)
