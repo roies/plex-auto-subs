@@ -46,6 +46,14 @@ Quick install (Linux/macOS — where Plex lives)
 That's it. The script installs Python/ffmpeg if missing, installs the package,
 asks for your Plex token, and registers a systemd service that starts on boot.
 
+Windows install
+---------------
+  powershell -ExecutionPolicy Bypass -File .\install-windows.ps1
+
+The PowerShell script checks for Python/ffmpeg, installs the package and
+dependencies, asks for your Plex token and URL, and creates a Windows
+scheduled task that starts the daemon at boot.
+
 Manual install
 --------------
   pip install git+https://github.com/roies/plex-auto-subs

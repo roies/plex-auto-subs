@@ -30,6 +30,8 @@ Do not use this tool to access or redistribute copyrighted content without permi
 
 ## Install (one command)
 
+### Linux / macOS / Plex server
+
 Run this on your Plex server:
 
 ```bash
@@ -41,6 +43,20 @@ The script will:
 - Install the package and all dependencies
 - Ask for your Plex token *(or leave blank for local no-auth)*
 - Set up a systemd service that starts automatically on boot
+
+### Windows
+
+From PowerShell, run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\install-windows.ps1
+```
+
+The script will:
+- Check for Python and ffmpeg
+- Install the package and dependencies
+- Ask for your Plex token and URL
+- Create a Windows scheduled task that starts the daemon at boot
 
 ---
 
